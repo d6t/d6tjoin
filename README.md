@@ -108,3 +108,14 @@ For the `jellyfish` library, make sure the C implementation is working else `d6t
 *  [MergeTop1 notebook](https://github.com/d6t/d6tjoin/blob/master/examples-top1.ipynb) - Best match join examples notebook
 *  [Token substring join notebook](https://github.com/d6t/d6tjoin/blob/master/examples-tokencluster.ipynb) - Find common substrings and joins on token substrings
 *  [Official docs](http://d6tjoin.readthedocs.io/en/latest/py-modindex.html) - Detailed documentation for modules, classes, functions
+
+## Faster Data Engineering
+
+Check out other d6t libraries to solve common data engineering problems, including  
+* data ingest, quickly ingest raw data
+* fuzzy joins, quickly join data
+* data pipes, quick share and distribute data
+
+https://github.com/d6t/d6t-python
+
+And we encourage you to join the Databolt blog to get updates and tips+tricks http://blog.databolt.tech
