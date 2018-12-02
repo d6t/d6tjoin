@@ -114,7 +114,7 @@ For the `jellyfish` library, make sure the C implementation is working else `d6t
 Check out other d6t libraries to solve common data engineering problems, including  
 * data ingest, quickly ingest raw data
 * fuzzy joins, quickly join data
-* data pipes, quick share and distribute data
+* data pipes, quickly share and distribute data
 
 https://github.com/d6t/d6t-python
 
