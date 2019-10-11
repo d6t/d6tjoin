@@ -3,6 +3,7 @@
 temp/
 fiddle*
 .pytest_cache/
+tests/tmp-local.py
 
 docs-examples/
 

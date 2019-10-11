@@ -4,34 +4,13 @@ from collections import OrderedDict
 import itertools
 import warnings
 import jellyfish
-from joblib import Parallel, delayed
-import multiprocessing
 
 # ******************************************
 # helpers
 # ******************************************
-def _set_values(dfg, key):
-    v = dfg[key].unique()
-    v = v[~pd.isnull(v)]
-    return set(v)
 
 
-def _filter_group_min(dfg, col, topn=1):
-    """
-
-    Returns all rows equal to min in col
-
-    """
-    if topn==1:
-        return dfg[dfg[col] == dfg[col].min()]
-    else:
-        return dfg[dfg[col].isin(np.sort(dfg[col].unique())[:topn])]
-
-
-def _applyFunMulticore(values1, values2, func):
-
-    retLst = Parallel(n_jobs=multiprocessing.cpu_count())(delayed(func)(p[0],p[1]) for p in zip(values1,values2))
-    return retLst
+from d6tjoin.utils import _applyFunMulticore, _filter_group_min, _set_values
 
 class MergeTop1Diff(object):
     """
