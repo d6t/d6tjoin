@@ -109,6 +109,16 @@ For the `jellyfish` library, make sure the C implementation is working else `d6t
 *  [Token substring join notebook](https://github.com/d6t/d6tjoin/blob/master/examples-tokencluster.ipynb) - Find common substrings and joins on token substrings
 *  [Official docs](http://d6tjoin.readthedocs.io/en/latest/py-modindex.html) - Detailed documentation for modules, classes, functions
 
+## Pro version
+
+Additional features:  
+* Join >2 dataframes
+* Automatic Content-based similarity joins
+* Advanced join quality checks
+* Fast approximations for big data
+
+[Request demo](https://pipe.databolt.tech/gui/request-premium/)
+
 ## Faster Data Engineering
 
 Check out other d6t libraries to solve common data engineering problems, including  
