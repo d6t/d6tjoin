@@ -133,3 +133,36 @@ def unique_contains(dfs, strlist):
     outlist = [(x, [s for s in dfs if x in s]) for x in strlist]
     return outlist
 
+import collections
+
+def typeSeries(dfs):
+    """
+    Find type of a pandas series
+
+    Args:
+        dfs (pd.series): pd.series of values
+
+    Returns:
+        str: type
+
+    """
+    c = collections.Counter([type(x) for x in dfs.values])
+    cnt = c.most_common()
+    if len(cnt)>1:
+        return 'mixed'
+    else:
+        return cnt[0][0]
+
+def typeDataFrame(df):
+    """
+    Find type of a pandas dataframe columns
+
+    Args:
+        df (pd.dataframe): pandas dataframe
+
+    Returns:
+        dict: column, type
+
+    """
+    return dict(zip(df.columns,[typeSeries(df[s]) for s in df]))
+

@@ -5,6 +5,16 @@ import pandas as pd
 pd.set_option('display.expand_frame_repr', False)
 import numpy as np
 
+from d6tstack.helpers import *
+from scipy.stats import mode
+
+
+# ******************************************
+# utils
+# ******************************************
+def head(dfs, nrows=1000):
+    return [dfg.head(nrows) for dfg in dfs]
+
 # ******************************************
 # join base class
 # ******************************************
@@ -33,6 +43,7 @@ class BaseJoin(object):
 
         self.dfs = dfs
         self.cfg_ndfs = len(dfs)
+        self.columns_sniff()
 
     def set_keys(self, keys, keys_bydf=True):
         # check and save join keys
@@ -47,6 +58,7 @@ class BaseJoin(object):
         self.keysdfall = keysdf + [['__all__']] * len(self.dfs)
         self.uniques = []  # set of unique values for each join key individually
         self.keysets = []  # set of unique values for all join keys together __all__
+
         return keys, keysdf
 
     def _check_keys(self, keys):
@@ -97,12 +109,60 @@ class BaseJoin(object):
         else:
             return result
 
+    def columns_sniff(self):
+        # from d6tstack
+        # todo: modularize d6tstack
+        # tood: rewrite scipy mode function
+
+        dfl_all = self.dfs
+        fname_list = range(len(self.dfs))
+
+        # process columns
+        dfl_all_col = [df.columns.tolist() for df in dfl_all]
+        col_files = dict(zip(fname_list, dfl_all_col))
+        col_common = list_common(list(col_files.values()))
+        col_all = list_unique(list(col_files.values()))
+
+        # find index in column list so can check order is correct
+        df_col_present = {}
+        for iFileName, iFileCol in col_files.items():
+            df_col_present[iFileName] = [iCol in iFileCol for iCol in col_all]
+
+        df_col_present = pd.DataFrame(df_col_present, index=col_all).T
+        df_col_present.index.names = ['file_path']
+
+        # find index in column list so can check order is correct
+        df_col_idx = {}
+        for iFileName, iFileCol in col_files.items():
+            df_col_idx[iFileName] = [iFileCol.index(iCol) if iCol in iFileCol else np.nan for iCol in col_all]
+        df_col_idx = pd.DataFrame(df_col_idx, index=col_all).T
+
+        # order columns by where they appear in file
+        m=mode(df_col_idx,axis=0)
+        df_col_pos = pd.DataFrame({'o':m[0][0],'c':m[1][0]},index=df_col_idx.columns)
+        df_col_pos = df_col_pos.sort_values(['o','c'])
+        df_col_pos['iscommon']=df_col_pos.index.isin(col_common)
+
+
+        # reorder by position
+        col_all = df_col_pos.index.values.tolist()
+        col_common = df_col_pos[df_col_pos['iscommon']].index.values.tolist()
+        col_unique = df_col_pos[~df_col_pos['iscommon']].index.values.tolist()
+        df_col_present = df_col_present[col_all]
+        df_col_idx = df_col_idx[col_all]
+
+        sniff_results = {'files_columns': col_files, 'columns_all': col_all, 'columns_common': col_common,
+                       'columns_unique': col_unique, 'is_all_equal': columns_all_equal(dfl_all_col),
+                       'df_columns_present': df_col_present, 'df_columns_order': df_col_idx}
+
+        self.sniff_results = sniff_results
+
 
 # ******************************************
 # prejoin stats class
 # ******************************************
 
-class PreJoin(BaseJoin):
+class Prejoin(BaseJoin):
     """
     Analyze, slice & dice join keys and dataframes before joining. Useful for checking how good a join will be and quickly looking at unmatched join keys.
 
@@ -177,15 +237,17 @@ class PreJoin(BaseJoin):
             dfh.append(df)
 
         result = {idx: dfg.head(nrows) for idx, dfg in enumerate(dfh)}
-        self._returndict(result)
+        return self._returndict(result)
 
     def columns_common(self):
-        result = list(set(self.dfs[0].columns.tolist()).intersection(*[dfg.columns.tolist() for dfg in self.dfs[1:]]))
-        self._return(result)
 
-    def columns_union(self):
+        # result = list(set(self.dfs[0].columns.tolist()).intersection(*[dfg.columns.tolist() for dfg in self.dfs[1:]]))
+        result = self.sniff_results['columns_common']
+        return self._return(result)
+
+    def columns_all(self):
         result = list(set().intersection(*[dfg.columns.tolist() for dfg in self.dfs]))
-        self._return(result)
+        return self._return(result)
 
     def columns_ispresent(self, as_bool=False):
         # todo: maintain column order of first dataframe => take from d6tstack
@@ -194,7 +256,7 @@ class PreJoin(BaseJoin):
         dfr = pd.DataFrame(dfr,index=col_union).sort_index()
         if not as_bool:
             dfr = dfr.replace([True,False],['+','-'])
-        self._return(dfr)
+        return self._return(dfr)
 
     def str_describe(self, columns=None, unique_count=False):
         """
@@ -353,7 +415,7 @@ class PreJoin(BaseJoin):
         df_out = df_out.rename(columns={'keyset left':'left','keyset right':'right'})
         df_out = df_out[['key left','key right','all matched','inner','left','right','outer','unmatched total','unmatched left','unmatched right']]
 
-        self._return(df_out)
+        return self._return(df_out)
 
     def is_all_matched(self, key='__all__',rerun=False):
 
