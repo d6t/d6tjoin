@@ -33,6 +33,9 @@ class BaseJoin(object):
 
         self.print_only = print_only
 
+        # init column scan
+        self.columns_sniff()
+
     def _init_dfs(self, dfs):
         # check and save dfs
         if len(dfs)<2:
@@ -43,7 +46,6 @@ class BaseJoin(object):
 
         self.dfs = dfs
         self.cfg_ndfs = len(dfs)
-        self.columns_sniff()
 
     def set_keys(self, keys, keys_bydf=True):
         # check and save join keys
@@ -59,6 +61,9 @@ class BaseJoin(object):
         self.uniques = []  # set of unique values for each join key individually
         self.keysets = []  # set of unique values for all join keys together __all__
 
+        for idx, ikey in enumerate(keysdf):
+            self.dfs[idx] = self.dfs[idx][ikey]
+
         return keys, keysdf
 
     def _check_keys(self, keys):
@@ -67,8 +72,12 @@ class BaseJoin(object):
         # todo: no duplicate join keys passed
 
     def _check_keysdfs(self, keys, keysdf):
-        if not all([len(k)==len(self.dfs) for k in keys]):
+        if not all([len(k)==len(self.dfs) for k in keysdf]):
             raise ValueError("Need to provide join keys for all dataframes")
+
+        def dev():
+            [len(k) for k in keys]
+            [len(self.dfs) for k in keys]
 
         for idf,dfg in enumerate(self.dfs):
             dfg.head(1)[keysdf[idf]] # check that keys present in dataframe
@@ -88,7 +97,6 @@ class BaseJoin(object):
 
             if keys_bydf:
                 keys, keysdf = keysdf, keys
-                pass
 
         else:
             raise ValueError("keys need to be either list of strings or list of lists")
@@ -240,14 +248,10 @@ class Prejoin(BaseJoin):
         return self._returndict(result)
 
     def columns_common(self):
-
-        # result = list(set(self.dfs[0].columns.tolist()).intersection(*[dfg.columns.tolist() for dfg in self.dfs[1:]]))
-        result = self.sniff_results['columns_common']
-        return self._return(result)
+        return self._return(self.sniff_results['columns_common'])
 
     def columns_all(self):
-        result = list(set().intersection(*[dfg.columns.tolist() for dfg in self.dfs]))
-        return self._return(result)
+        return self._return(self.sniff_results['columns_all'])
 
     def columns_ispresent(self, as_bool=False):
         # todo: maintain column order of first dataframe => take from d6tstack

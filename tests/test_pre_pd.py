@@ -18,16 +18,28 @@ def test_pre_columns():
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
     assert pdj.columns_common()==['a','b']
     assert pdj.columns_all()==['a','b']
-    assert pdj.str_describe()==['a','b']
-    assert pdj.str_describe(columns=['b'])==['a','b']
-    assert pdj.str_describe(columns=['a'])==None
+    columns = ['b']
+    # assert pdj.str_describe()==['a','b']
+    # assert pdj.str_describe(columns=['b'])==['a','b']
+    # assert pdj.str_describe(columns=['a'])==None
 
     dfs = fake_2dfs_1missing()
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
     assert pdj.columns_common()==['a']
     assert pdj.columns_all()==['a','b']
 
-def test_pre_strlen():
+def test_keys_param():
+    dfs = fake_2dfs_identical()
+    pdj = d6tjoin.Prejoin(dfs,keys=['b'], print_only=False)
+    assert pdj.columns_common()==['b']
+    assert pdj.columns_all()==['b']
+
+    tdfs = [dfs[0],dfs[1].rename(columns={'b':'c'})]
+    pdj = d6tjoin.Prejoin(tdfs,keys=[['b'],['c']], print_only=False)
+    assert pdj.columns_all()==['b','c']
+
+
+def dev_test_pre_strlen():
     dfs = fake_2dfs_identical()
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
     assert pdj.str_describe()==['a','b']
