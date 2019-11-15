@@ -16,12 +16,22 @@ def head(dfs, nrows=1000):
     return [dfg.head(nrows) for dfg in dfs]
 
 # ******************************************
-# join base class
+# prejoin stats class
 # ******************************************
 
-class BaseJoin(object):
+class Prejoin(object):
+    """
+    Analyze, slice & dice join keys and dataframes before joining. Useful for checking how good a join will be and quickly looking at unmatched join keys.
 
-    def __init__(self, dfs, keys=None, keys_bydf=True, print_only=True):
+    Args:
+        dfs (list): list of data frames to join
+        keys (var): either list of strings `['a','b']` if join keys have the same names in all dataframes or list of lists if join keys are different across dataframes `[[leftkeys],[rightkeys]]`, eg `[['left1','left2'],['right1','right2']]`
+        keys_bydf (bool): if False, specify multi-key join keys by join level eg `[['left1','right1'],['left2','right2']]`
+        nrows (int): for `df.head(nrows)`
+        print_only (bool): if False return results instead of printing
+    """
+
+    def __init__(self, dfs, keys=None, keys_bydf=True, nrows=5, print_only=True):
 
         # inputs dfs
         self._init_dfs(dfs)
@@ -29,9 +39,13 @@ class BaseJoin(object):
         if keys is not None:
             self.set_keys(keys, keys_bydf)
         else:
-            self.keys = None
+            self.keys = None; self.keysdf = None
 
+        self.nrows = nrows
         self.print_only = print_only
+
+        # df heads
+        self.dfshead = [dfg.head(nrows) for idx, dfg in self._enumerate_dfs()]
 
         # init column scan
         self.columns_sniff()
@@ -47,6 +61,12 @@ class BaseJoin(object):
         self.dfs = dfs
         self.cfg_ndfs = len(dfs)
 
+    def _enumerate_dfs(self):
+        if self.keys is None:
+            return enumerate(self.dfs)
+        else:
+            return [(idx, dfg[self.keysdf[idx]]) for idx, dfg in enumerate(self.dfs)]
+
     def set_keys(self, keys, keys_bydf=True):
         # check and save join keys
         self._check_keys(keys)
@@ -61,9 +81,6 @@ class BaseJoin(object):
         self.uniques = []  # set of unique values for each join key individually
         self.keysets = []  # set of unique values for all join keys together __all__
 
-        for idx, ikey in enumerate(keysdf):
-            self.dfs[idx] = self.dfs[idx][ikey]
-
         return keys, keysdf
 
     def _check_keys(self, keys):
@@ -72,15 +89,13 @@ class BaseJoin(object):
         # todo: no duplicate join keys passed
 
     def _check_keysdfs(self, keys, keysdf):
-        if not all([len(k)==len(self.dfs) for k in keysdf]):
+        if not all([len(k)==len(self.dfs) for k in keys]):
             raise ValueError("Need to provide join keys for all dataframes")
 
-        def dev():
-            [len(k) for k in keys]
-            [len(self.dfs) for k in keys]
-
-        for idf,dfg in enumerate(self.dfs):
-            dfg.head(1)[keysdf[idf]] # check that keys present in dataframe
+        for idf,dfg in enumerate(self.dfs): # check that keys present in dataframe
+            missing = set(keysdf[idf]).difference(dfg.columns)
+            if missing:
+                raise KeyError(f'Columns missing in df#{idf}: {missing}')
 
     def _prep_keys(self, keys, keys_bydf):
         # deal with empty keys
@@ -122,7 +137,7 @@ class BaseJoin(object):
         # todo: modularize d6tstack
         # tood: rewrite scipy mode function
 
-        dfl_all = self.dfs
+        dfl_all = self.dfshead
         fname_list = range(len(self.dfs))
 
         # process columns
@@ -166,19 +181,6 @@ class BaseJoin(object):
         self.sniff_results = sniff_results
 
 
-# ******************************************
-# prejoin stats class
-# ******************************************
-
-class Prejoin(BaseJoin):
-    """
-    Analyze, slice & dice join keys and dataframes before joining. Useful for checking how good a join will be and quickly looking at unmatched join keys.
-
-    Args:
-        dfs (list): list of data frames to join
-        keys (var): either list of strings `['a','b']` if join keys have the same names in all dataframes or list of lists if join keys are different across dataframes `[['a1','b1'],['a2','b2']]`
-    """
-
     def _calc_keysets(self):
 
         self.keysets = [] # reset
@@ -219,7 +221,7 @@ class Prejoin(BaseJoin):
 
             self.keysets.append(df_key)
 
-    def head(self, nrows=None, keys_only=True):
+    def head(self, nrows=None):
         """
         .head() of input dataframes
 
@@ -229,22 +231,10 @@ class Prejoin(BaseJoin):
             print (bool): print or return df
 
         """
-        nrows = self.cfg_show_nrows if nrows is None else nrows
-
-        dfh = []
-        for idf,dfg in enumerate(self.dfs):
-
-            df = dfg
-
-            if keys_only:
-                df = dfg[self.keysdf[idf]]
-
-            if nrows>0:
-                df = df.head(nrows)
-
-            dfh.append(df)
-
-        result = {idx: dfg.head(nrows) for idx, dfg in enumerate(dfh)}
+        if nrows is None:
+            result = {idx: dfg for idx, dfg in enumerate(self.dfshead)}
+        else:
+            result = {idx: dfg.head(nrows) for idx, dfg in self._enumerate_dfs()}
         return self._returndict(result)
 
     def columns_common(self):
@@ -262,7 +252,7 @@ class Prejoin(BaseJoin):
             dfr = dfr.replace([True,False],['+','-'])
         return self._return(dfr)
 
-    def str_describe(self, columns=None, unique_count=False):
+    def str_describe(self, unique_count=False):
         """
         Returns statistics on length of all strings and other objects in pandas dataframe. Statistics include mean, median, min, max. Optional unique count.
 
@@ -284,39 +274,33 @@ class Prejoin(BaseJoin):
 
         result = {}
         for idx, dfg in enumerate(self.dfs):
-            if not columns:
-                columns_sel=dfg.columns
             if unique_count:
                 cfg_col_sel = ['median','min','max','nrecords','uniques']
             else:
                 cfg_col_sel = ['median','min','max','nrecords']
-            dfo = dfg[columns_sel].select_dtypes(include=['object']).apply(lambda x: _apply_strlen(x.dropna(), unique_count)).T[cfg_col_sel]
+            dfo = dfg.select_dtypes(include=['object']).apply(lambda x: _apply_strlen(x.dropna(), unique_count)).T[cfg_col_sel]
             result[idx] = dfo
         return self._returndict(result)
 
-    def data_describe(self, columns=None, ignore_value_columns=False):
+    def data_describe(self, ignore_value_columns=False):
         result = {}
         for idx, dfg in enumerate(self.dfs):
 
-            if columns is None:
-                columns_sel = dfg.columns
+            if ignore_value_columns:
+                columns_sel = dfg.select_dtypes(include=['object']).columns
             else:
-                if ignore_value_columns:
-                    columns_sel = dfg.select_dtypes(include=['object']).columns
-                else:
-                    columns_sel = dfg.columns
+                columns_sel = dfg.columns
 
-            dfg = dfg[columns_sel]
-            nunique = dfg.apply(lambda x: x.dropna().unique().shape[0]).rename('unique')
-            nrecords = dfg.apply(lambda x: x.dropna().shape[0]).rename('nrecords')
-            nnan = dfg.isna().sum().rename('nan')
+            nunique = dfg[columns_sel].apply(lambda x: x.dropna().unique().shape[0]).rename('unique')
+            nrecords = dfg[columns_sel].apply(lambda x: x.dropna().shape[0]).rename('nrecords')
+            nnan = dfg[columns_sel].isna().sum().rename('nan')
             dfr = pd.concat([nrecords,nunique,nnan],1)
             dfr['unique rate'] = dfr['unique']/dfr['nrecords']
             result[idx] = dfr
 
         return self._returndict(result)
 
-    def data_match(self, how=None, columns=None, topn=1, ignore_value_columns=True, max_unique_pct=0.8, min_unique_count=1, min_match_rate=0.5):
+    def data_match(self, how=None, topn=1, ignore_value_columns=True, max_unique_pct=0.8, min_unique_count=1, min_match_rate=0.5):
         '''
         todo:
             order matters, sequential inner or left joins (no right or outer joins)
@@ -330,17 +314,24 @@ class Prejoin(BaseJoin):
 
         from d6tjoin.utils import _filter_group_min
 
-        df_left = self.dfs[0] if columns is None else self.dfs[0][columns]
-        df_right = self.dfs[1] if columns is None else self.dfs[1][columns]
+        if ignore_value_columns:
+            df_left, df_right = [dfg.select_dtypes(include=['object']) for _, dfg in self._enumerate_dfs()]
+            print('ignored columns (value type)', 'left:',set(self.dfs[0].columns)-set(df_left.columns), 'right:', set(self.dfs[1].columns)-set(df_right.columns))
+        else:
+            df_left, df_right = [dfg for _, dfg in self._enumerate_dfs()]
 
         def unique_dict(dfg):
             d = dict(zip(dfg.columns, [set(dfg[x].dropna().unique()) for x in dfg.columns]))
-            d = {k: v for k, v in d.items() if (len(v) > min_unique_count) and (len(v)/dfg[k].shape[0] < max_unique_pct)}
+            d = {k: v for k, v in d.items() if (len(v) > min_unique_count) and (len(v)/dfg[k].shape[0] <= max_unique_pct)}
             return d
 
         # todo: add len(key) and sample=next(key)
         values_left = unique_dict(df_left)
         values_right = unique_dict(df_right)
+        values_left_ignored = set(df_left.columns)-set(values_left.keys())
+        values_right_ignored = set(df_right.columns)-set(values_right.keys())
+        if values_left_ignored: print('ignored columns (unique count)', 'left:', values_left_ignored)
+        if values_right_ignored: print('ignored columns (unique count)', 'right:', values_right_ignored)
 
         df_candidates = list(itertools.product(values_left.keys(), values_right.keys()))
         df_candidates = pd.DataFrame(df_candidates, columns=['__left__', '__right__'])
