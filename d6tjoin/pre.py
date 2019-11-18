@@ -252,7 +252,29 @@ class Prejoin(object):
             dfr = dfr.replace([True,False],['+','-'])
         return self._return(dfr)
 
-    def str_describe(self, unique_count=False):
+    def describe(self, **kwargs):
+        """
+        .describe() of input dataframes
+
+        Args:
+            kwargs (misc): to pass to .describe()
+
+        """
+        result = {idx: dfg.describe(**kwargs) for idx, dfg in self._enumerate_dfs()}
+        return self._returndict(result)
+
+    def shape(self):
+        """
+        .shape of input dataframes
+
+        Args:
+            kwargs (misc): to pass to .describe()
+
+        """
+        result = {idx: dfg.shape for idx, dfg in self._enumerate_dfs()}
+        return self._returndict(result)
+
+    def describe_str(self, unique_count=False):
         """
         Returns statistics on length of all strings and other objects in pandas dataframe. Statistics include mean, median, min, max. Optional unique count.
 
@@ -282,7 +304,7 @@ class Prejoin(object):
             result[idx] = dfo
         return self._returndict(result)
 
-    def data_describe(self, ignore_value_columns=False):
+    def describe_data(self, ignore_value_columns=False):
         result = {}
         for idx, dfg in enumerate(self.dfs):
 

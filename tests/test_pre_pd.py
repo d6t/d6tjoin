@@ -70,27 +70,30 @@ def test_pre_columns():
     assert pdj.columns_common()==['a','b']
     assert pdj.columns_all()==['a','b']
 
+    pdj.describe()
+    assert pdj.shape() == {0: (10, 2), 1: (10, 2)}
+
     dfs = fake_2dfs_1missing()
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
     assert pdj.columns_common()==['a']
     assert pdj.columns_all()==['a','b']
 
 def test_pre_describe():
-    # str_describe
+    # describe_str
     chk = {'b': {'median': 1.5, 'min': 1.0, 'max': 2.0, 'nrecords': 10.0}}
     dfs = fake_2dfs_identical()
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
-    assert pdj.str_describe()[0].to_dict(orient='index')==chk
+    assert pdj.describe_str()[0].to_dict(orient='index')==chk
     pdj = d6tjoin.Prejoin(dfs,keys=['b'],print_only=False)
-    assert pdj.str_describe()[0].to_dict(orient='index')==chk
+    assert pdj.describe_str()[0].to_dict(orient='index')==chk
 
-    # str_describe
+    # describe_str
     chk = {'a': {'nrecords': 10, 'unique': 10, 'nan': 0, 'unique rate': 1.0},
      'b': {'nrecords': 10, 'unique': 2, 'nan': 0, 'unique rate': 0.2}}
     pdj = d6tjoin.Prejoin(dfs,print_only=False)
-    assert pdj.data_describe()[0].to_dict(orient='index')==chk
+    assert pdj.describe_data()[0].to_dict(orient='index')==chk
     pdj = d6tjoin.Prejoin(dfs,keys=['b'],print_only=False)
-    assert pdj.data_describe()[0].to_dict(orient='index')==chk
+    assert pdj.describe_data()[0].to_dict(orient='index')==chk
 
 def test_pre_data_match():
     dfs = fake_2dfs_identical()
