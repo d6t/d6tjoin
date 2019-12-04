@@ -102,6 +102,8 @@ We recommend using [AffineGap](https://github.com/dedupeio/affinegap) which is n
 
 For the `jellyfish` library, make sure the C implementation is working else `d6tjoin` will be very slow. You can test by running `import jellyfish.cjellyfish` if the C version is installed. If you don't have a C compiler, you can `conda install -c conda-forge jellyfish`.
 
+**0.2.0 is currently in beta. The github master is the latest dev version.**
+
 ## Documentation
 
 *  [PreJoin examples notebook](https://github.com/d6t/d6tjoin/blob/master/examples-prejoin.ipynb) - Examples for diagnosing join problems
