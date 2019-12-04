@@ -560,3 +560,16 @@ class Prejoin(object):
         self._show('matched')
         if not self.cfg_show_print_only:
             return self.df_show_out
+
+    def merge(self, **kwargs):
+        """
+        Perform merge using keys
+
+        Args:
+            kwargs (misc): parameters to pass to `pd.merge()`
+        """
+        if len(self.dfs) > 2:
+            raise NotImplementedError('Only handles 2 dataframes for now')
+
+        return self.dfs[0].merge(self.dfs[1], left_on=self.keysdf[0], right_on=self.keysdf[1], **kwargs)
+

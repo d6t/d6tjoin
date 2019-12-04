@@ -5,7 +5,7 @@ import itertools
 import warnings
 import jellyfish
 
-from d6tjoin.utils import BaseJoin
+from d6tjoin.pre import Prejoin as BaseJoin
 
 
 # ******************************************
