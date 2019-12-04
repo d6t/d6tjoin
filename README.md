@@ -94,6 +94,8 @@ Enhances `pd.merge()` function with:
 
 ## Installation
 
+**0.2.0 is currently in beta. The github master is the latest dev version. The docs refer to <0.2.0**  
+
 We recommend using the latest version from github `pip install git+https://github.com/d6t/d6tjoin.git`
 
 If you cannot install from github, use the latest published version `pip install d6tjoin`.
@@ -101,8 +103,6 @@ If you cannot install from github, use the latest published version `pip install
 We recommend using [AffineGap](https://github.com/dedupeio/affinegap) which is not an official requirement, you can install using `pip install affinegap`.
 
 For the `jellyfish` library, make sure the C implementation is working else `d6tjoin` will be very slow. You can test by running `import jellyfish.cjellyfish` if the C version is installed. If you don't have a C compiler, you can `conda install -c conda-forge jellyfish`.
-
-**0.2.0 is currently in beta. The github master is the latest dev version.**
 
 ## Documentation
 
