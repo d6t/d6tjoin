@@ -2,6 +2,18 @@
 
 Easily join different datasets without writing custom code. Does best match joins on strings, dates and numbers. For example you can quickly join similar but not identical stock tickers, addresses, names and dates without manual processing.
 
+## Installation
+
+**0.2.0 is currently in beta. The github master is the latest dev version. The docs refer to <0.2.0**  
+
+We recommend using the latest version from github `pip install git+https://github.com/d6t/d6tjoin.git`
+
+If you cannot install from github, use the latest published version `pip install d6tjoin`. To update, run pip install d6tflow -U --no-deps
+
+We recommend using [AffineGap](https://github.com/dedupeio/affinegap) which is not an official requirement, you can install using `pip install affinegap`.
+
+For the `jellyfish` library, make sure the C implementation is working else `d6tjoin` will be very slow. You can test by running `import jellyfish.cjellyfish` if the C version is installed. If you don't have a C compiler, you can `conda install -c conda-forge jellyfish`.
+
 ## Sample Use
 
 ```
@@ -91,18 +103,6 @@ Enhances `pd.merge()` function with:
 * Best match joins that finds the top1 most similar value
 	* Quickly join stock identifiers, addresses, names without manual processing
 	* Ability to customize similarity functions, set max difference and other advanced features
-
-## Installation
-
-**0.2.0 is currently in beta. The github master is the latest dev version. The docs refer to <0.2.0**  
-
-We recommend using the latest version from github `pip install git+https://github.com/d6t/d6tjoin.git`
-
-If you cannot install from github, use the latest published version `pip install d6tjoin`.
-
-We recommend using [AffineGap](https://github.com/dedupeio/affinegap) which is not an official requirement, you can install using `pip install affinegap`.
-
-For the `jellyfish` library, make sure the C implementation is working else `d6tjoin` will be very slow. You can test by running `import jellyfish.cjellyfish` if the C version is installed. If you don't have a C compiler, you can `conda install -c conda-forge jellyfish`.
 
 ## Documentation
 
