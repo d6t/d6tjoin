@@ -8,7 +8,7 @@ Easily join different datasets without writing custom code. Does best match join
 
 We recommend using the latest version from github `pip install git+https://github.com/d6t/d6tjoin.git`
 
-If you cannot install from github, use the latest published version `pip install d6tjoin`. To update, run pip install d6tflow -U --no-deps
+If you cannot install from github, use the latest published version `pip install d6tjoin`. To update, run `pip install d6tflow -U --no-deps`
 
 We recommend using [AffineGap](https://github.com/dedupeio/affinegap) which is not an official requirement, you can install using `pip install affinegap`.
 
