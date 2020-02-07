@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='d6tjoin',
-    version='0.2.0',
+    version='0.2.1',
     packages=['d6tjoin'],
     url='https://github.com/d6t/d6tjoin',
     license='MIT',

@@ -4,7 +4,7 @@ Easily join different datasets without writing custom code. Does best match join
 
 ## Installation
 
-**0.2.0 is currently in beta. The github master is the latest dev version. The docs refer to <0.2.0**  
+**0.2.x is currently in beta. The github master is the latest dev version. The docs refer to <0.2.0**  
 
 We recommend using the latest version from github `pip install git+https://github.com/d6t/d6tjoin.git`
 
