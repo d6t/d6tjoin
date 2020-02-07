@@ -15,7 +15,8 @@ setup(
         'numpy',
         'pandas',
         'jellyfish',
-        'joblib'
+        'joblib',
+        'd6tstack'
     ],
     include_package_data=True,
     python_requires='>=3.6'
