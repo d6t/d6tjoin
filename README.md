@@ -20,7 +20,7 @@ For the `jellyfish` library, make sure the C implementation is working else `d6t
 
 import d6tjoin.top1
 import d6tjoin.utils
-import d6tjoin.Prejoin
+import d6tjoin
 
 #************************
 # pre join diagnostics
