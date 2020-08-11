@@ -16,7 +16,8 @@ setup(
         'pandas',
         'jellyfish',
         'joblib',
-        'd6tstack'
+        'd6tstack',
+        'affinegap'
     ],
     include_package_data=True,
     python_requires='>=3.6'

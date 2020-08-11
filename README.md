@@ -20,6 +20,7 @@ For the `jellyfish` library, make sure the C implementation is working else `d6t
 
 import d6tjoin.top1
 import d6tjoin.utils
+import d6tjoin
 
 #************************
 # pre join diagnostics
@@ -27,7 +28,7 @@ import d6tjoin.utils
 
 # check join quality => none of the ids match
 
-d6tjoin.utils.PreJoin([df1,df2],['id','date']).stats_prejoin()
+d6tjoin.Prejoin([df1,df2],['id','date']).match_quality()
 
   key left key right  all matched  inner  left  right  outer  unmatched total  unmatched left  unmatched right
 0       id        id        False      0    10     10     20               20              10               10
